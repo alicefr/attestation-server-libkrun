@@ -120,6 +120,6 @@ fn main() {
     load_image_repository_from_file(&repo).unwrap();
     rocket::ignite()
         .manage(repo)
-        .mount("/", routes![register_image])
+        .mount("/confidential", routes![register_image])
         .launch();
 }
