@@ -16,3 +16,5 @@ lazy_static = "1.4.0"
 sha2 = "0.9.8"
 byte_string = "1.0.0"
 clap = "2"
+sev = { version = "0.1.0", features = [ "openssl" ] }
+uuid = { version = "0.8.2", features = ["serde", "v4"] }
