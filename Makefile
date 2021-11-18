@@ -1,6 +1,7 @@
 CONTAINER_RUNTIME ?= docker
 IMAGE_ATTEST_SERV=attestation-server
 IMAGE_GEN_MES=generate-libkrun-measurment
+IMAGE_REG=register-image
 TAG ?= latest
 REGISTRY ?= "quay.io"
 
@@ -21,4 +22,7 @@ image-attestation-server: build-attester
 image-generate-libkrunfw-measurment: build-generate-libkrunfw-measurment
 	$(CONTAINER_RUNTIME) build -t "$(REGISTRY)/$(IMAGE_GEN_MES):$(TAG)" -f generate-libkrun-measurment/Dockerfile .
 
-images: image-attestation-server  image-generate-libkrunfw-measurment
+image-register-image:
+	$(CONTAINER_RUNTIME) build -t "$(REGISTRY)/$(IMAGE_REG):$(TAG)" -f register-image/Dockerfile register-image/
+
+images: image-attestation-server  image-generate-libkrunfw-measurment image-register-image

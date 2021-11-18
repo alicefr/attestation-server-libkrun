@@ -1,0 +1,38 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: encrypt-image
+spec:
+  params:
+    - name: image
+      type: string
+      default: image-registry.openshift-image-registry.svc:5000
+    - name: password
+      type: string
+    - name: cmd
+      type: string
+    - name: image_reg_svc
+      type: string
+    - name: registry
+      default: image-registry.openshift-image-registry.svc:5000
+    - name: namespace
+      type: string
+  steps:
+    - name: encrypt-image
+      image: "$(params.registry)/$(params.namespace)/register-image:latest"
+      command:
+        - /entrypoint.sh
+      args:
+        - '$(params.image)'
+        - '$(params.password)'
+        - '$(params.cmd)'
+        - '$(params.image_reg_svc)'
+      volumeMounts:
+        - name: varlibc
+          mountPath: /var/lib/containers
+      volumeMounts:
+        - name: varlibc
+          mountPath: /var/lib/containers
+  volumes:
+  - name: varlibc
+    emptyDir: {}
