@@ -23,7 +23,7 @@ use std::convert::TryFrom;
 use std::fmt;
 use std::fs::{self, File, OpenOptions};
 use std::io::ErrorKind;
-use std::io::{self, Write};
+use std::io::{self, Read, Write};
 use std::iter::FromIterator;
 use std::sync::Mutex;
 use uuid::Uuid;
@@ -249,6 +249,22 @@ fn attestation(attestation: Json<AttestationRequest>) -> JsonValue {
     }
 }
 
+fn load_libkrunfw_measurments(dir: &str) {
+    let mut m = MEASURMENTS.lock().unwrap();
+    File::open(dir.to_owned() + "/qboot_data")
+        .unwrap()
+        .read_to_end(&mut m.qboot_data)
+        .unwrap();
+    File::open(dir.to_owned() + "/kernel_data")
+        .unwrap()
+        .read_to_end(&mut m.kernel_data)
+        .unwrap();
+    File::open(dir.to_owned() + "/initrd_data")
+        .unwrap()
+        .read_to_end(&mut m.initrd_data)
+        .unwrap();
+}
+
 fn main() {
     let matches = App::new("attestation-server")
         .arg(
@@ -258,13 +274,22 @@ fn main() {
                 .help("Store registered image")
                 .takes_value(true),
         )
+        .arg(
+            Arg::with_name("directory")
+                .short("d")
+                .long("directory")
+                .help("Directory where to locate the library measurments")
+                .required(true)
+                .takes_value(true),
+        )
         .get_matches();
     let repo = matches
         .value_of("image-repository")
         .unwrap_or("/var/run/registered-images.json")
         .to_string();
-    println!("Value for config: {}", repo);
+    let dir = matches.value_of("directory").unwrap().to_string();
     load_image_repository_from_file(&repo).unwrap();
+    load_libkrunfw_measurments(&dir);
     rocket::ignite()
         .manage(repo)
         .mount("/confidential", routes![register_image])
