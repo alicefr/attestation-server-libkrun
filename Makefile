@@ -1,4 +1,4 @@
-CONTAINER_RUNTIME ?= docker
+CONTAINER_RUNTIME ?= podman
 IMAGE_ATTEST_SERV=attestation-server
 IMAGE_GEN_MES=generate-libkrun-measurment
 IMAGE_REG=register-image
