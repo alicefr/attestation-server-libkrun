@@ -97,6 +97,18 @@ fn load_image_repository_from_file(file: &str) -> Result<(), io::Error> {
     Ok(())
 }
 
+#[post(
+    "/register-libkrunfw_measurment",
+    format = "json",
+    data = "<measurments>"
+)]
+fn register_libkrunfw_measurment(measurments: Json<LibraryMeasurments>) -> JsonValue {
+    json!({
+        "status": "error",
+        "reason": "not implemented yet"
+    })
+}
+
 #[post("/register-image", format = "json", data = "<image>")]
 fn register_image(file: State<String>, image: Json<Image>) -> JsonValue {
     // TODO check arguments validity
@@ -306,7 +318,10 @@ fn main() {
     load_libkrunfw_measurments(&dir);
     rocket::ignite()
         .manage(repo)
-        .mount("/confidential", routes![register_image])
+        .mount(
+            "/confidential",
+            routes![register_image, register_libkrunfw_measurment],
+        )
         .mount("/untrusted", routes![attestation, session])
         .launch();
 }
