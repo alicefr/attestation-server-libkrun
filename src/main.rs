@@ -44,6 +44,12 @@ pub struct Image {
     kernel_cmd_line: String,
 }
 
+impl Image {
+    pub fn get_kernel_cmdline(&self) -> &str {
+        &self.kernel_cmd_line
+    }
+}
+
 impl fmt::Display for Image {
     fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::result::Result<(), std::fmt::Error> {
         write!(
@@ -97,14 +103,15 @@ fn register_image(file: State<String>, image: Json<Image>) -> JsonValue {
     // - if sha is valid
     // - if the kernel cmdline is valid
     println!("Recieved image {}", &image.0);
+    let image_key = image.name.clone() + &image.sha;
     let mut hashmap = IMAGES.lock().unwrap();
-    if hashmap.contains_key(&image.sha) {
+    if hashmap.contains_key(&image_key) {
         json!({
             "status": "error",
             "reason": "ID exists."
         })
     } else {
-        hashmap.insert(image.sha.clone(), image.0);
+        hashmap.insert(image_key, image.0);
         println!("IMAGES {:?}", hashmap);
         drop(hashmap);
         write_images_to_file(file.inner()).unwrap();
@@ -190,6 +197,7 @@ struct LibraryMeasurments {
 struct AttestationRequest {
     session_id: String,
     measurment: Measurement,
+    image: String,
 }
 
 #[post("/attestation", format = "json", data = "<attestation>")]
@@ -233,13 +241,19 @@ fn attestation(attestation: Json<AttestationRequest>) -> JsonValue {
                     "/attestation: verification succeeded for id={}",
                     attest_req.session_id
                 );
-                let cmdline: Vec<u8> = Vec::new(); // TODO fetch the kernel cmd of the image
-                let padding = vec![0; 512 - cmdline.len()];
-                let data = [cmdline, padding].concat();
-                let secret = session
-                    .secret(sev::launch::HeaderFlags::default(), &data)
-                    .unwrap();
-                json!(secret)
+                if let Some(image) = IMAGES.lock().unwrap().get(&attest_req.image) {
+                    let cmdline: Vec<u8> = image.get_kernel_cmdline().as_bytes().to_vec();
+                    let padding = vec![0; 512 - cmdline.len()];
+                    let data = [cmdline, padding].concat();
+                    let secret = session
+                        .secret(sev::launch::HeaderFlags::default(), &data)
+                        .unwrap();
+                    json!(secret)
+                } else {
+                    json!({ "status": "error",
+                            "reason": format!("no image {} found", attest_req.image),
+                    })
+                }
             }
         }
     } else {
