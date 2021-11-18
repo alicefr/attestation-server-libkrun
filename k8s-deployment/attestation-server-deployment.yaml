@@ -1,0 +1,53 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: attestation-server
+  name: attestation-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: attestation-server
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: attestation-server
+    spec:
+      initContainers:
+      - image: image-registry.openshift-image-registry.svc:5000/attestation/generate-libkrun-measurment:latest
+        name: init-libkrunfw-measurment
+        command: ["/usr/bin/generate-libkrun-measurment"]
+        args:
+        - "-d"
+        - "/var/lib/attestation-server/measurments"
+        volumeMounts:
+        - mountPath: /var/lib/attestation-server/measurments
+          name: libkrun-measurments
+      containers:
+      - image: image-registry.openshift-image-registry.svc:5000/attestation/attestation-server:latest
+        name: attestation-server
+        command: ["/usr/bin/attestation-server"]
+        args:
+        - "-d"
+        - "/var/lib/attestation-server/measurments"
+        - "-i"
+        - "/var/lib/attestation-server/registered-images.json"
+        volumeMounts:
+        - mountPath: /var/lib/attestation-server/measurments
+          name: libkrun-measurments
+        - mountPath: /var/lib/attestation-server/
+          name: image-repository
+        ports:
+        - containerPort: 8081
+        - containerPort: 8080
+      volumes:
+      - name: libkrun-measurments
+        emptyDir: {}
+      - name: image-repository
+        persistentVolumeClaim:
+          claimName: image-repository
