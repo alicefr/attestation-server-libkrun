@@ -20,14 +20,15 @@ use sev::session::{Initialized, Session};
 use sev::{Build, Version};
 use std::collections::HashMap;
 use std::convert::TryFrom;
-use std::fmt;
 use std::fs::{self, File, OpenOptions};
 use std::io::ErrorKind;
 use std::io::{self, Read, Write};
 use std::iter::FromIterator;
 use std::sync::Mutex;
+use std::{fmt, thread};
 use uuid::Uuid;
 mod vmsa;
+use rocket::config;
 use vmsa::{VMSA_AP, VMSA_BP};
 
 lazy_static! {
@@ -316,12 +317,25 @@ fn main() {
     let dir = matches.value_of("directory").unwrap().to_string();
     load_image_repository_from_file(&repo).unwrap();
     load_libkrunfw_measurments(&dir);
-    rocket::ignite()
-        .manage(repo)
-        .mount(
-            "/confidential",
-            routes![register_image, register_libkrunfw_measurment],
-        )
+    let config_confidential = config::Config::build(config::Environment::Production)
+        .port(8080)
+        .finalize()
+        .unwrap();
+    let config_attestation = config::Config::build(config::Environment::Production)
+        .port(8081)
+        .finalize()
+        .unwrap();
+
+    thread::spawn(move || {
+        rocket::custom(config_confidential)
+            .manage(repo)
+            .mount(
+                "/confidential",
+                routes![register_image, register_libkrunfw_measurment],
+            )
+            .launch();
+    });
+    rocket::custom(config_attestation)
         .mount("/untrusted", routes![attestation, session])
         .launch();
 }
