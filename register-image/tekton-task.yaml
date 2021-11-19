@@ -1,12 +1,11 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: encrypt-image
+  name: register-encrypt-image
 spec:
   params:
     - name: image
       type: string
-      default: image-registry.openshift-image-registry.svc:5000
     - name: password
       type: string
     - name: cmd
