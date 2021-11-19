@@ -49,8 +49,9 @@ oc apply -f ../encrypt-image/security-context.yaml
 oc create sa $SA
 oc adm policy add-scc-to-user scc-admin-demo  system:serviceaccount:$NS:$SA
 
+# Install tekton tasks
 oc apply -f ../encrypt-image/tekton-task.yaml
-
+oc apply -f ../register-image/tekton-task.yaml
 
 # Deploy the attestation server and expose the service
 oc apply -f ../k8s-deployment
