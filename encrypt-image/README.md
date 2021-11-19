@@ -9,7 +9,7 @@ $ podman build -t image-tekton-encrypt -f image/Dockerfile
 Locally in a separate directory
 ```bash
 $ sudo mkdir -p /var/lib/containers1 
-$ sudo podman run --privileged -it -v /var/lib/containers1:/var/lib/containers:Z localhost/image-tekton-encrypt  fedora:latest encrypt myamazingpassword
+$ sudo podman run --privileged -it -v /var/lib/containers1:/var/lib/containers:Z quay.io/encrypt-image fedora:latest  fedora:latest encrypt myamazingpassword
 $ sudo podman --root /var/lib/containers1/storage images  -a
 REPOSITORY                         TAG         IMAGE ID      CREATED         SIZE
 localhost/encrypt                  latest      44d10fe62130  16 minutes ago  3.25 kB

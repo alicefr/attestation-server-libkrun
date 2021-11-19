@@ -26,7 +26,7 @@ RUN git clone -b amdsev https://github.com/containers/libkrunfw.git  \
 
 FROM fedora:35
 
-COPY --from=BUILD /libkrunfw/libkrunfw.so /usr//lib64/libkrunfw.so
+COPY --from=BUILD /libkrunfw/libkrunfw.so /usr/lib64/libkrunfw.so
 COPY target/release/generate-libkrun-measurment /usr/bin
 
 ENTRYPOINT ["/usr/bin/generate-libkrun-measurment"]
