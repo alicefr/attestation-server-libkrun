@@ -11,13 +11,14 @@ DISK=$OUTDIR/$OUTPUT
 
 buildah rm $CONT
 
-set -xe 
+set -xe
 
 mkdir -p $OUTDIR
 buildah from --name $CONT $IMAGE
 dir=$(buildah mount $CONT)
 cd $dir
 find . | cpio -o -c -R root:root | gzip -9 >  $DISK
+sleep 2
 # encrypt the image with the LUKS passphrase
 DEVICE=$(losetup  -f  --show $DISK)
 echo "YES" | echo "$PASSWORD" | cryptsetup -y -v --type luks2 luksFormat $DEVICE

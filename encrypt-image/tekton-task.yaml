@@ -16,9 +16,11 @@ spec:
       type: string
     - name: registry
       default: image-registry.openshift-image-registry.svc:5000
+    - name: namespace-tekton-task
+      type: string
   steps:
     - name: encrypt-image
-      image: "$(params.registry)/encrypt-image-demo/tekton-encrypt-images:latest"
+      image: "$(params.registry)/$(params.namespace-tekton-task)/encrypt-image:latest"
       command:
         - /entrypoint.sh
       args:
