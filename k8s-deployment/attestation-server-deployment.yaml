@@ -49,5 +49,6 @@ spec:
       - name: libkrun-measurments
         emptyDir: {}
       - name: image-repository
-        persistentVolumeClaim:
-          claimName: image-repository
+        hostPath:
+          path: /attestation/image-repository
+          type: DirectoryOrCreate
