@@ -1,0 +1,42 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: encrypt-image
+spec:
+  params:
+    - name: input-image
+      type: string
+    - name: output-image
+      type: string
+    - name: password
+      type: string
+    - name: user
+      type: string
+    - name: reg-password
+      type: string
+    - name: registry
+      default: image-registry.openshift-image-registry.svc:5000
+  steps:
+    - name: encrypt-image
+      image: "$(params.registry)/encrypt-image-demo/tekton-encrypt-images:latest"
+      command:
+        - /entrypoint.sh
+      args:
+        - '$(params.input-image)'
+        - '$(params.output-image)'
+        - '$(params.password)'
+      securityContext:
+        privileged: true
+        runAsUser: 0
+      volumeMounts:
+        - name: varlibc
+          mountPath: /var/lib/containers
+    - name: push-image
+      image: quay.io/buildah/stable
+      command: ["sh", "-c", "buildah login -u $(params.user) -p $(params.reg-password) --tls-verify=false $(params.registry) && buildah images && buildah tag localhost/$(params.output-image) $(params.registry)/$(params.output-image) && buildah push --tls-verify=false $(params.registry)/$(params.output-image)"]
+      volumeMounts:
+        - name: varlibc
+          mountPath: /var/lib/containers
+  volumes:
+  - name: varlibc
+    emptyDir: {}

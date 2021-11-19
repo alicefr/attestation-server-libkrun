@@ -2,6 +2,7 @@ CONTAINER_RUNTIME ?= podman
 IMAGE_ATTEST_SERV=attestation-server
 IMAGE_GEN_MES=generate-libkrun-measurment
 IMAGE_REG=register-image
+IMAGE_ENCRYPT=encrypt-image
 TAG ?= latest
 REGISTRY ?= "quay.io"
 
@@ -25,4 +26,7 @@ image-generate-libkrunfw-measurment: build-generate-libkrunfw-measurment
 image-register-image:
 	$(CONTAINER_RUNTIME) build -t "$(REGISTRY)/$(IMAGE_REG):$(TAG)" -f register-image/Dockerfile register-image/
 
-images: image-attestation-server  image-generate-libkrunfw-measurment image-register-image
+image-encrypt:
+	$(CONTAINER_RUNTIME) build -t "$(REGISTRY)/$(IMAGE_ENCRYPT):$(TAG)" -f encrypt-image/Dockerfile encrypt-image/
+
+images: image-attestation-server  image-generate-libkrunfw-measurment image-register-image image-encrypt
