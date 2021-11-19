@@ -3,6 +3,7 @@ IMAGE_ATTEST_SERV=attestation-server
 IMAGE_GEN_MES=generate-libkrun-measurment
 IMAGE_REG=register-image
 IMAGE_ENCRYPT=encrypt-image
+IMAGE_DEBUG=debug
 TAG ?= latest
 REGISTRY ?= "quay.io"
 
@@ -29,4 +30,7 @@ image-register-image:
 image-encrypt:
 	$(CONTAINER_RUNTIME) build -t "$(REGISTRY)/$(IMAGE_ENCRYPT):$(TAG)" -f encrypt-image/Dockerfile encrypt-image/
 
-images: image-attestation-server  image-generate-libkrunfw-measurment image-register-image image-encrypt
+image-debug:
+	$(CONTAINER_RUNTIME) build -t "$(REGISTRY)/$(IMAGE_DEBUG):$(TAG)" -f debug-container/Dockerfile debug-container/
+
+images: image-attestation-server  image-generate-libkrunfw-measurment image-register-image image-encrypt image-debug

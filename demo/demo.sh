@@ -8,10 +8,12 @@ IMAGE_SA_NAME=attestation-server
 IMAGE_GEN_NAME=generate-libkrun-measurment
 IMAGE_REG_NAME=register-image
 IMAGE_ENCRYPT_NAME=encrypt-image
+IMAGE_DEBUG_NAME=debug
 LOCAL_IMAGE_AS="quay.io/$IMAGE_SA_NAME:$VERSION"
 LOCAL_IMAGE_GEN="quay.io/$IMAGE_GEN_NAME:$VERSION"
 LOCAL_IMAGE_REG="quay.io/$IMAGE_REG_NAME:$VERSION"
 LOCAL_IMAGE_ENCRYPT="quay.io/$IMAGE_ENCRYPT_NAME"
+LOCAL_IMAGE_DEBUG="quay.io/$IMAGE_DEBUG_NAME"
 NS=attestation
 INSECURE_NS=untrusted
 SA=tekton-encryp-images
@@ -32,8 +34,10 @@ IMAGE_SA="$HOST/$NS/$IMAGE_SA_NAME:$VERSION"
 IMAGE_GEN="$HOST/$NS/$IMAGE_GEN_NAME:$VERSION"
 IMAGE_REG="$HOST/$NS/$IMAGE_REG_NAME:$VERSION"
 IMAGE_ENCRYPT="$HOST/$NS/$IMAGE_ENCRYPT_NAME:$VERSION"
+IMAGE_DEBUG="$HOST/$NS/$IMAGE_DEBUG_NAME:$VERSION"
 
 # Copy all the images inside the internal registry
+# TODO create a function to push 
 podman tag $LOCAL_IMAGE_AS  $IMAGE_SA
 podman push --tls-verify=false $IMAGE_SA
 podman tag $LOCAL_IMAGE_GEN  $IMAGE_GEN
@@ -42,6 +46,8 @@ podman tag $LOCAL_IMAGE_REG  $IMAGE_REG
 podman push --tls-verify=false $IMAGE_REG
 podman tag $LOCAL_IMAGE_ENCRYPT  $IMAGE_ENCRYPT
 podman push --tls-verify=false $IMAGE_ENCRYPT
+podman tag $LOCAL_IMAGE_DEBUG  $IMAGE_DEBUG
+podman push --tls-verify=false $IMAGE_DEBUG
 
 # Create setup for the encrypt images tekton task
 oc apply -f ../encrypt-image/security-context.yaml
