@@ -116,7 +116,7 @@ fn register_image(file: State<String>, image: Json<Image>) -> JsonValue {
     // - if sha is valid
     // - if the kernel cmdline is valid
     println!("Recieved image {}", &image.0);
-    let image_key = image.name.clone() + &image.sha;
+    let image_key = image.name.clone() + "@" + &image.sha;
     let mut hashmap = IMAGES.lock().unwrap();
     if hashmap.contains_key(&image_key) {
         json!({
@@ -144,7 +144,7 @@ struct Config {
 struct SessionRequest {
     build: Build,
     chain: Chain,
-    image_sha: String,
+    image: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -156,6 +156,7 @@ struct SessionResponse {
 struct SessionData {
     build: Build,
     session: Session<Initialized>,
+    image: String,
 }
 
 #[post("/session", format = "json", data = "<session_req>")]
@@ -190,6 +191,7 @@ fn session(session_req: Json<SessionRequest>) -> JsonValue {
         SessionData {
             build: session_req.build,
             session,
+            image: session_req.image.clone(),
         },
     );
 
@@ -208,15 +210,16 @@ struct LibraryMeasurments {
 
 #[derive(Serialize, Deserialize)]
 struct AttestationRequest {
-    session_id: String,
+//    session_id: String,
     measurment: Measurement,
-    image: String,
+//    image: String,
 }
 
-#[post("/attestation", format = "json", data = "<attestation>")]
-fn attestation(attestation: Json<AttestationRequest>) -> JsonValue {
-    let attest_req = attestation.0;
-    if let Some(session_data) = SESSIONS.lock().unwrap().remove(&attest_req.session_id) {
+#[post("/attestation/<id>", format = "json", data = "<measurment>")]
+fn attestation(id: String, measurment: Json<Measurement,>) -> JsonValue {
+    let m = measurment.0;
+    print!("attestation with id={}", &id);
+    if let Some(session_data) = SESSIONS.lock().unwrap().remove(&id) {
         let measurments = MEASURMENTS.lock().unwrap();
         let mut session = session_data.session.measure().unwrap();
         session
@@ -242,9 +245,9 @@ fn attestation(attestation: Json<AttestationRequest>) -> JsonValue {
             }
         }
 
-        match session.verify(session_data.build, attest_req.measurment) {
+        match session.verify(session_data.build, m) {
             Err(_) => {
-                println!("Verification failed for id={}", attest_req.session_id);
+                println!("Verification failed for id={}", &id);
                 json!({ "status": "error",
                         "reason": "no session found",
                 })
@@ -252,9 +255,9 @@ fn attestation(attestation: Json<AttestationRequest>) -> JsonValue {
             Ok(session) => {
                 println!(
                     "/attestation: verification succeeded for id={}",
-                    attest_req.session_id
+                    &id
                 );
-                if let Some(image) = IMAGES.lock().unwrap().get(&attest_req.image) {
+                if let Some(image) = IMAGES.lock().unwrap().get(&session_data.image) {
                     let cmdline: Vec<u8> = image.get_kernel_cmdline().as_bytes().to_vec();
                     let padding = vec![0; 512 - cmdline.len()];
                     let data = [cmdline, padding].concat();
@@ -264,7 +267,7 @@ fn attestation(attestation: Json<AttestationRequest>) -> JsonValue {
                     json!(secret)
                 } else {
                     json!({ "status": "error",
-                            "reason": format!("no image {} found", attest_req.image),
+                            "reason": format!("no image {} found", &session_data.image),
                     })
                 }
             }
