@@ -4,6 +4,7 @@ RUN dnf update -y && dnf install -y \
     cpio \
     cryptsetup \
     findutils \
+    e2fsprogs \
     && rm -rf /var/cache /var/log/dnf* /var/log/yum.*
 
 COPY entrypoint.sh /entrypoint.sh
