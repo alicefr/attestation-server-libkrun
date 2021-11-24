@@ -36,7 +36,7 @@ losetup -d $DEVICE
 buildah rm $CONT
 
 
-# TODO generate fake entrypoint
+# generate fake entrypoint
 touch $OUTDIR/entrypoint.sh
 chmod +x $OUTDIR/entrypoint.sh
 
@@ -44,5 +44,4 @@ chmod +x $OUTDIR/entrypoint.sh
 buildah from --name $CONT scratch 
 buildah copy $CONT $DISK /
 buildah copy $CONT $OUTDIR/entrypoint.sh /
-# TODO copy fake entrypoint in the final image
 buildah commit --rm $CONT $ENCRYPT_IMAGE
