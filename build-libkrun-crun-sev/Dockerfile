@@ -1,4 +1,4 @@
-FROM fedora:35 as BUILD
+FROM fedora:34 as BUILD
 ENV DESTDIR /output
 
 RUN dnf install -y \
