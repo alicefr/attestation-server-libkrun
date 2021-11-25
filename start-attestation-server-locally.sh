@@ -16,6 +16,7 @@ podman run --rm -ti -v ${VOL_MEASURM}:/var/lib/attestation-server/measurments \
 
 podman run -td -v ${VOL_MEASURM}:/var/lib/attestation-server/measurments \
 	-v ${VOL_IMAGE_REPO}:/var/lib/attestation-server \
+	--hostname attestation-server \
 	--name attestation-server \
 	-p 8080:8080 -p 8081:8081 \
 	quay.io/attestation-server \
