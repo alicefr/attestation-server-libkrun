@@ -253,11 +253,8 @@ fn attestation(id: String, measurment: Json<Measurement,>) -> JsonValue {
                 })
             }
             Ok(session) => {
-                println!(
-                    "/attestation: verification succeeded for id={}",
-                    &id
-                );
                 if let Some(image) = IMAGES.lock().unwrap().get(&session_data.image) {
+                println!("/attestation: verification succeeded for id={}", &id);
                     let cmdline: Vec<u8> = image.get_kernel_cmdline().as_bytes().to_vec();
                     let padding = vec![0; 512 - cmdline.len()];
                     let data = [cmdline, padding].concat();
@@ -266,6 +263,7 @@ fn attestation(id: String, measurment: Json<Measurement,>) -> JsonValue {
                         .unwrap();
                     json!(secret)
                 } else {
+                    println!("Image {} not found", &session_data.image);
                     json!({ "status": "error",
                             "reason": format!("no image {} found", &session_data.image),
                     })
