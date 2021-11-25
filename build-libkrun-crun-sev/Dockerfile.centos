@@ -1,0 +1,52 @@
+FROM quay.io/centos/centos:stream8 as BUILD
+ENV DESTDIR /output
+
+RUN yum install --enablerepo='*' --disablerepo='media-*' -y \
+   autoconf \
+   automake \
+   bc \
+   bison \
+   cargo \
+   curl \
+   diffutils \
+   elfutils-libelf-devel \
+   findutils \
+   flex \
+   gcc \
+   git \
+   glibc-static \
+   libcap-devel \
+   libseccomp-devel \
+   libtool \
+   make \
+   openssl-devel \
+   patch \
+   python36 \
+   python3-pip \
+   tar \
+   systemd-devel \
+   xz  \
+   yajl-devel  \
+   && rm -rf /var/cache /var/log/dnf* /var/log/yum.*
+
+RUN pip3 install pyelftools
+RUN mkdir -p ${DESTDIR}
+RUN git clone -b amdsev https://github.com/containers/libkrunfw.git  \
+    && cd libkrunfw \
+    && make \
+    && make install
+
+RUN git clone -b attest-sev https://github.com/alicefr/libkrun.git \
+    && cd libkrun \
+    && export LIBRARY_PATH=${DESTDIR}/usr/local/lib64 \
+    && make && make install 
+
+RUN git clone -b krun-sev-attestation https://github.com/alicefr/crun.git \
+    && cd crun \
+    && ./autogen.sh \
+    && ./configure --with-libkrun CFLAGS="-I${DESTDIR}/usr/local/include/" \
+    && make && make install
+
+FROM scratch
+
+COPY --from=BUILD /output /output
