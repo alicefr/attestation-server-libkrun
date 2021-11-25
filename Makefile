@@ -1,4 +1,5 @@
 CONTAINER_RUNTIME ?= podman
+IMAGE_CRUN_KRUN=crun-krun
 IMAGE_ATTEST_SERV=attestation-server
 IMAGE_GEN_MES=generate-libkrun-measurment
 IMAGE_REG=register-image
@@ -18,10 +19,13 @@ build-generate-libkrunfw-measurment:
 	cd generate-libkrun-measurment
 	cargo build --release
 
+image-build-crun-krun:
+	$(CONTAINER_RUNTIME) build -t "$(REGISTRY)/$(IMAGE_CRUN_KRUN):$(TAG)" -f build-libkrun-crun-sev/Dockerfile .
+
 image-attestation-server: build-attester
 	$(CONTAINER_RUNTIME) build -t "$(REGISTRY)/$(IMAGE_ATTEST_SERV):$(TAG)" -f attester/Dockerfile .
 
-image-generate-libkrunfw-measurment: build-generate-libkrunfw-measurment
+image-generate-libkrunfw-measurment: image-build-crun-krun build-generate-libkrunfw-measurment
 	$(CONTAINER_RUNTIME) build -t "$(REGISTRY)/$(IMAGE_GEN_MES):$(TAG)" -f generate-libkrun-measurment/Dockerfile .
 
 image-register-image:
