@@ -1,4 +1,4 @@
-FROM crun-krun as BUILD
+FROM quay.io/crun-krun as BUILD
 
 FROM fedora:35
 
