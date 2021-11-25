@@ -21,7 +21,7 @@ mkdir -p $OUTDIR $ROOT_DIR
 fallocate -l $DISK_SIZE $DISK
 # encrypt the image with the LUKS passphrase
 DEVICE=$(losetup  -f  --show $DISK)
-echo "YES" | echo "$PASSWORD"| cryptsetup luksFormat -y -v --cipher aegis128-random --key-size 128 --integrity aead --type luks2 $DEVICE
+echo "YES" | echo "$PASSWORD"| cryptsetup luksFormat -y -v --type luks1 $DEVICE
 echo "$PASSWORD" | cryptsetup luksOpen $DEVICE $CRYPT_PARTITION
 mkfs.ext4 /dev/mapper/$CRYPT_PARTITION
 mount /dev/mapper/$CRYPT_PARTITION $ROOT_DIR
