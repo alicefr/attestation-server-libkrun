@@ -1,4 +1,4 @@
-FROM quay.io/crun-krun as BUILD
+FROM crun-krun:centos8 as BUILD
 
 FROM fedora:35
 
