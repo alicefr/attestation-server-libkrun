@@ -18,6 +18,16 @@ spec:
       labels:
         app: attestation-server
     spec:
+      affinity:
+       nodeAffinity:
+         requiredDuringSchedulingIgnoredDuringExecution:
+           nodeSelectorTerms:
+           - matchExpressions:
+             - key: node-role.kubernetes.io/master
+               operator: In
+               values:
+               - ""
+      serviceAccountName: default
       initContainers:
       - image: image-registry.openshift-image-registry.svc:5000/attestation/generate-libkrun-measurment:latest
         name: init-libkrunfw-measurment
@@ -49,6 +59,4 @@ spec:
       - name: libkrun-measurments
         emptyDir: {}
       - name: image-repository
-        hostPath:
-          path: /attestation/image-repository
-          type: DirectoryOrCreate
+        emptyDir: {}
