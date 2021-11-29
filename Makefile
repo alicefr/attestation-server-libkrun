@@ -25,7 +25,7 @@ image-build-crun-krun:
 image-attestation-server: build-attester
 	$(CONTAINER_RUNTIME) build -t "$(REGISTRY)/$(IMAGE_ATTEST_SERV):$(TAG)" -f attester/Dockerfile .
 
-image-generate-libkrunfw-measurment: image-build-crun-krun build-generate-libkrunfw-measurment
+image-generate-libkrunfw-measurment: build-generate-libkrunfw-measurment
 	$(CONTAINER_RUNTIME) build -t "$(REGISTRY)/$(IMAGE_GEN_MES):$(TAG)" -f generate-libkrun-measurment/Dockerfile .
 
 image-register-image:
