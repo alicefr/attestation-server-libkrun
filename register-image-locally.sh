@@ -2,7 +2,7 @@
 
 set -xe 
 
-IMAGE=localhost/encrypt
+IMAGE=localhost/fedora-encrypt-luks1
 PASS=myamazingpassword
 CMD="/bin/sh"
 SVC=localhost:8080/confidential/register-image
