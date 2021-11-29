@@ -14,7 +14,7 @@ LOCAL_IMAGE_GEN="quay.io/$IMAGE_GEN_NAME:$VERSION"
 LOCAL_IMAGE_REG="quay.io/$IMAGE_REG_NAME:$VERSION"
 LOCAL_IMAGE_ENCRYPT="quay.io/$IMAGE_ENCRYPT_NAME"
 LOCAL_IMAGE_DEBUG="quay.io/$IMAGE_DEBUG_NAME"
-NS=attestation
+ATTESTATION_NS=attestation
 INSECURE_NS=untrusted
 SA=tekton-encryp-images
 
@@ -24,7 +24,7 @@ oc patch configs.imageregistry.operator.openshift.io/cluster --patch '{"spec":{"
 HOST=$(oc get route default-route -n openshift-image-registry --template='{{ .spec.host }}')
 podman login -u admin -p $(oc whoami -t) --tls-verify=false $HOST
 
-oc new-project $NS
+oc new-project $ATTESTATION_NS
 oc create imagestream $IMAGE_SA_NAME
 oc create imagestream $IMAGE_GEN_NAME
 oc create imagestream $IMAGE_REG_NAME

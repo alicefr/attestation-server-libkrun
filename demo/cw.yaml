@@ -32,7 +32,7 @@ spec:
     volumeMounts:
     - mountPath: /dev/kvm
       name: kvm
-    - mountPath: /dev/se
+    - mountPath: /dev/sev
       name: sev
     - mountPath: /tmp
       name: tmp

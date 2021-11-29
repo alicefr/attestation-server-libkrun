@@ -1,5 +1,5 @@
 apiVersion: tekton.dev/v1beta1
-kind: Task
+kind: ClusterTask
 metadata:
   name: register-encrypt-image
 spec:
@@ -26,15 +26,11 @@ spec:
         - '$(params.password)'
         - '$(params.cmd)'
         - '$(params.image_reg_svc)'
-      volumeMounts:
-        - name: varlibc
-          mountPath: /var/lib/containers
-      volumeMounts:
-        - name: varlibc
-          mountPath: /var/lib/containers
       securityContext:
         privileged: true
         runAsUser: 0
-  volumes:
-  - name: varlibc
-    emptyDir: {}
+  workspaces:
+  - name: image-repository
+    optional: false
+    mountPath: /var/lib/containers
+

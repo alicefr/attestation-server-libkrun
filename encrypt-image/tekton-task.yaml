@@ -1,5 +1,5 @@
 apiVersion: tekton.dev/v1beta1
-kind: Task
+kind: ClusterTask
 metadata:
   name: encrypt-image
 spec:
@@ -30,18 +30,13 @@ spec:
       securityContext:
         privileged: true
         runAsUser: 0
-      volumeMounts:
-        - name: varlibc
-          mountPath: /var/lib/containers
     - name: push-image
       image: quay.io/buildah/stable
       command: ["sh", "-c", "buildah login -u $(params.user) -p $(params.reg-password) --tls-verify=false $(params.registry) && buildah push --tls-verify=false $(params.output-image)"]
-      volumeMounts:
-        - name: varlibc
-          mountPath: /var/lib/containers
       securityContext:
         privileged: true
         runAsUser: 0
-  volumes:
-  - name: varlibc
-    emptyDir: {}
+  workspaces:
+  - name: image-repository
+    optional: false
+    mountPath: /var/lib/containers

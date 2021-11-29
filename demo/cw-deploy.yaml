@@ -5,12 +5,12 @@ metadata:
   labels:
     app: confidential-deploy
   name: confidential-deploy
+  namespace: untrusted
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: confidential-deploy
-  strategy: {}
   template:
     metadata:
       creationTimestamp: null
@@ -19,7 +19,7 @@ spec:
       annotations:
         run.oci.handler: "krun"
         krun/attestation: "http://172.30.115.41:8081/untrusted"
-        krun/image: "image-registry.openshift-image-registry.svc:5000/untrusted/demo-encrypted-image:latest@sha256:a247307b785e50af863f672653794c541cd4bf7141e88f7ad1c3cbf5af666c47"
+        krun/image: "image-registry.openshift-image-registry.svc:5000/untrusted/demo-encrypted-image@sha256:c20fac2b3812812b341bc9a585ee6521ac0707b9d820ce3721f2f33f7e96e5d6"
     spec:
       serviceAccountName: default
       runtimeClassName: crun-krun
@@ -33,7 +33,7 @@ spec:
                 values:
                 - "sev"
       containers:
-      - image: image-registry.openshift-image-registry.svc:5000/untrusted/demo-encrypted-image
+      - image: image-registry.openshift-image-registry.svc:5000/untrusted/demo-encrypted-image@sha256:a0c9e1297fe54e3a5acb50611b7225d8b76e4bba64bdd373ffd1189196bac918
         command:
         - "/entrypoint.sh"
         name: demo-encrypted-image
@@ -49,6 +49,9 @@ spec:
         - mountPath: /tmp
           name: tmp
         restartPolicy: Never
+        ports:
+        - containerPort: 8080
+          protocol: TCP
         securityContext:
           privileged: true
           unAsUser: 0
