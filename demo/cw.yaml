@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: confidential-pod
+  name: confidential-pod
+  annotations:
+    run.oci.handler: "krun"
+    krun/attestation: "http://attestation-svc-attestation.apps.demo.virtee.io/untrusted"
+    krun/image: "image-registry.openshift-image-registry.svc:5000/untrusted/demo-encrypted-image:latest@sha256:a247307b785e50af863f672653794c541cd4bf7141e88f7ad1c3cbf5af666c47"
+spec:
+  runtimeClassName: crun-krun
+  serviceAccountName: default
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: virtee
+            operator: In
+            values:
+            - "sev"
+  containers:
+  - command:
+    - "/entrypoint.sh"
+    image: image-registry.openshift-image-registry.svc:5000/untrusted/demo-encrypted-image
+    name: confidential
+    stdin: true
+    tty: true
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - mountPath: /dev/kvm
+      name: kvm
+    - mountPath: /dev/se
+      name: sev
+    - mountPath: /tmp
+      name: tmp
+    restartPolicy: Never
+    securityContext:
+      privileged: true
+      unAsUser: 0
+    resources:
+      limits:
+        memory: 3G
+      requests:
+        memory: 3G
+  volumes:
+  - name: kvm
+    hostPath:
+      path: /dev/kvm
+  - name: sev
+    hostPath:
+      path: /dev/sev
+  - hostPath:
+      path: /tmp
+    name: tmp
