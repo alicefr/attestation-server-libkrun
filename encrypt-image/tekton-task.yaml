@@ -39,6 +39,9 @@ spec:
       volumeMounts:
         - name: varlibc
           mountPath: /var/lib/containers
+      securityContext:
+        privileged: true
+        runAsUser: 0
   volumes:
   - name: varlibc
     emptyDir: {}
