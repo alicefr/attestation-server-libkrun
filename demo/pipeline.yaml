@@ -1,0 +1,74 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: encrypt-image-demo-pipline-test
+  namespace: tekton-build
+spec:
+        #  finally:
+        #    - name: push-image-internal-registry
+        #      params:
+        #        - name: image
+        #          value: >-
+        #            image-registry.openshift-image-registry.svc:5000/untrusted/demo-encrypted-image
+        #        - name: user
+        #          value: admin
+        #        - name: registry
+        #          value: 'image-registry.openshift-image-registry.svc:5000'
+        #        - name: reg-password
+        #          value: sha256~VvibiralmKIY65Y_9jWJq-jpKRd6BDdIzv3wLKkrH6I
+        #      taskRef:
+        #        kind: ClusterTask
+        #        name: push-image-internal-registry
+        #      workspaces:
+        #        - name: image-repository
+        #          workspace: workspace
+  tasks:
+    - name: encrypt-image
+      params:
+        - name: input-image
+          value: 'fedora:latest'
+        - name: output-image
+          value: >-
+            image-registry.openshift-image-registry.svc:5000/untrusted/demo-encrypted-image
+        - name: password
+          value: myamazingpassword
+        - name: registry
+          value: 'image-registry.openshift-image-registry.svc:5000'
+        - name: namespace-tekton-task
+          value: attestation
+        - name: user
+          value: admin
+        - name: reg-password
+          value: sha256~VvibiralmKIY65Y_9jWJq-jpKRd6BDdIzv3wLKkrH6I
+      taskRef:
+        kind: ClusterTask
+        name: encrypt-image
+      workspaces:
+        - name: image-repository
+          workspace: workspace
+    - name: register-encrypt-image-p4k
+      params:
+        - name: image
+          value: >-
+            image-registry.openshift-image-registry.svc:5000/untrusted/demo-encrypted-image
+        - name: password
+          value: myamazingpassword
+        - name: cmd
+          value: /bin/bash
+        - name: image_reg_svc
+          value: >-
+            registration-attestation-server.attestation:8080/confidential/register-image
+        - name: registry
+          value: 'image-registry.openshift-image-registry.svc:5000'
+        - name: namespace
+          value: attestation
+      runAfter:
+        - encrypt-image
+      taskRef:
+        kind: ClusterTask
+        name: register-encrypt-image
+      workspaces:
+        - name: image-repository
+          workspace: workspace
+  workspaces:
+    - name: workspace
