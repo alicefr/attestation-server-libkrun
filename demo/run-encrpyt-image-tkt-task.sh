@@ -12,5 +12,5 @@ tkn task  start encrypt-image -p input-image=fedora:latest \
         --use-param-defaults \
 	-p namespace-tekton-task="attestation" \
         -p password=myamazingpassword \
-	-p user=kubeadmin -p reg-password=$(oc whoami -t)  -s $SA
+	-p user=admin -p reg-password=$(oc whoami -t)  -s $SA
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -x
-export KUBECONFIG=~/.crc/machines/crc/kubeconfig
+#export KUBECONFIG=~/.crc/machines/crc/kubeconfig
 
 VERSION=latest
 IMAGE_SA_NAME=attestation-server
@@ -19,10 +19,10 @@ INSECURE_NS=untrusted
 SA=tekton-encryp-images
 
 # Expose the internal registry
-oc login -u kubeadmin -p $(cat ~/.crc/machines/crc/kubeadmin-password) https://api.crc.testing:6443
+#oc login -u kubeadmin -p $(cat ~/.crc/machines/crc/kubeadmin-password) https://api.crc.testing:6443
 oc patch configs.imageregistry.operator.openshift.io/cluster --patch '{"spec":{"defaultRoute":true}}' --type=merge
 HOST=$(oc get route default-route -n openshift-image-registry --template='{{ .spec.host }}')
-podman login -u kubeadmin -p $(oc whoami -t) --tls-verify=false $HOST 
+podman login -u admin -p $(oc whoami -t) --tls-verify=false $HOST
 
 oc new-project $NS
 oc create imagestream $IMAGE_SA_NAME
@@ -54,6 +54,8 @@ oc apply -f ../encrypt-image/security-context.yaml
 # The service accout is required to provide privileged to the encryp images task in order to be able to create the loopback disk and use cryptesetup
 oc create sa $SA
 oc adm policy add-scc-to-user scc-admin-demo  system:serviceaccount:$NS:$SA
+# SCC for using hostpath by the attestation server. TODO replace hostpath by a PVC
+oc adm policy add-scc-to-user hostaccess  system:serviceaccount:$NS:default
 
 # Install tekton tasks
 oc apply -f ../encrypt-image/tekton-task.yaml
