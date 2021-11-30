@@ -19,7 +19,7 @@ spec:
       annotations:
         run.oci.handler: "krun"
         krun/attestation: "http://172.30.115.41:8081/untrusted"
-        krun/image: "image-registry.openshift-image-registry.svc:5000/untrusted/demo-encrypted-image@sha256:c20fac2b3812812b341bc9a585ee6521ac0707b9d820ce3721f2f33f7e96e5d6"
+        krun/image: "image-registry.openshift-image-registry.svc:5000/untrusted/nginx-encrypted-image@sha256:6062cb500f074aff2e3d1f5380db90092262743f74fb5f6c063098d7cab4221c"
     spec:
       serviceAccountName: default
       runtimeClassName: crun-krun
@@ -33,7 +33,7 @@ spec:
                 values:
                 - "sev"
       containers:
-      - image: image-registry.openshift-image-registry.svc:5000/untrusted/demo-encrypted-image@sha256:a0c9e1297fe54e3a5acb50611b7225d8b76e4bba64bdd373ffd1189196bac918
+      - image: image-registry.openshift-image-registry.svc:5000/untrusted/nginx-encrypted-image
         command:
         - "/entrypoint.sh"
         name: demo-encrypted-image
@@ -50,7 +50,7 @@ spec:
           name: tmp
         restartPolicy: Never
         ports:
-        - containerPort: 8080
+        - containerPort: 80
           protocol: TCP
         securityContext:
           privileged: true
@@ -70,3 +70,31 @@ spec:
       - hostPath:
           path: /tmp
         name: tmp
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: confidential-deploy
+  name: confidential-deploy
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: confidential-deploy
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    app: confidential-deploy
+  name: confidential-deploy
+spec:
+  port:
+    targetPort: 80
+  to:
+    kind: ""
+    name: confidential-deploy
+    weight: null
