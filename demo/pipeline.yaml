@@ -26,9 +26,9 @@ spec:
     - name: encrypt-image
       params:
         - name: input-image
-          value: 'image-registry.openshift-image-registry.svc:5000/untrusted/nginx:latest'
+          value: 'image-registry.openshift-image-registry.svc:5000/untrusted/nginx-password-demo:latest'
         - name: output-image
-          value: image-registry.openshift-image-registry.svc:5000/untrusted/nginx-encrypted-image
+          value: image-registry.openshift-image-registry.svc:5000/untrusted/nginx-encrypted-demo
         - name: password
           value: myamazingpassword
         - name: registry
@@ -38,7 +38,7 @@ spec:
         - name: user
           value: admin
         - name: reg-password
-          value: sha256~VvibiralmKIY65Y_9jWJq-jpKRd6BDdIzv3wLKkrH6I
+          value: sha256~wqXq381Th_WHQQhMY44vbFcwEZ5vyR-G1DkdUCQTI_s
       taskRef:
         kind: ClusterTask
         name: encrypt-image
@@ -49,7 +49,7 @@ spec:
       params:
         - name: image
           value: >-
-            image-registry.openshift-image-registry.svc:5000/untrusted/nginx-encrypted-image
+            image-registry.openshift-image-registry.svc:5000/untrusted/nginx-encrypted-demo
         - name: password
           value: myamazingpassword
         - name: cmd
