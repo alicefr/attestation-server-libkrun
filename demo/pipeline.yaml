@@ -26,16 +26,15 @@ spec:
     - name: encrypt-image
       params:
         - name: input-image
-          value: 'fedora:latest'
+          value: 'image-registry.openshift-image-registry.svc:5000/untrusted/nginx:latest'
         - name: output-image
-          value: >-
-            image-registry.openshift-image-registry.svc:5000/untrusted/demo-encrypted-image
+          value: image-registry.openshift-image-registry.svc:5000/untrusted/nginx-encrypted-image
         - name: password
           value: myamazingpassword
         - name: registry
           value: 'image-registry.openshift-image-registry.svc:5000'
         - name: namespace-tekton-task
-          value: attestation
+          value: tekton-build
         - name: user
           value: admin
         - name: reg-password
@@ -50,18 +49,18 @@ spec:
       params:
         - name: image
           value: >-
-            image-registry.openshift-image-registry.svc:5000/untrusted/demo-encrypted-image
+            image-registry.openshift-image-registry.svc:5000/untrusted/nginx-encrypted-image
         - name: password
           value: myamazingpassword
         - name: cmd
-          value: /bin/bash
+          value: '/docker-entrypoint.sh  nginx -g \"daemon off;\"'
         - name: image_reg_svc
           value: >-
             registration-attestation-server.attestation:8080/confidential/register-image
         - name: registry
           value: 'image-registry.openshift-image-registry.svc:5000'
         - name: namespace
-          value: attestation
+          value: tekton-build
       runAfter:
         - encrypt-image
       taskRef:
