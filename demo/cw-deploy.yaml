@@ -19,7 +19,7 @@ spec:
       annotations:
         run.oci.handler: "krun"
         krun/attestation: "http://172.30.115.41:8081/untrusted"
-        krun/image: "image-registry.openshift-image-registry.svc:5000/untrusted/nginx-encrypted-image@sha256:6062cb500f074aff2e3d1f5380db90092262743f74fb5f6c063098d7cab4221c"
+        krun/image: "image-registry.openshift-image-registry.svc:5000/untrusted/nginx-encrypted-demo@sha256:38048b92c10219bd0542c85b287d44dfc7981f9f3cda96387bed07c5272da468"
     spec:
       serviceAccountName: default
       runtimeClassName: crun-krun
@@ -33,9 +33,10 @@ spec:
                 values:
                 - "sev"
       containers:
-      - image: image-registry.openshift-image-registry.svc:5000/untrusted/nginx-encrypted-image
+      - image: image-registry.openshift-image-registry.svc:5000/untrusted/nginx-encrypted-demo:latest
         command:
         - "/entrypoint.sh"
+        imagePullPolicy: Always
         name: demo-encrypted-image
         stdin: true
         tty: true
