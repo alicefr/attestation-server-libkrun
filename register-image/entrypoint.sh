@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -x
+set -xe
 
 image=$1
 password=$2
