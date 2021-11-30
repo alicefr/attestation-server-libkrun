@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nginx-sample
+  name: nginx-sample
+  namespace: untrusted
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-sample
+  template:
+    metadata:
+      labels:
+        app: nginx-sample
+    spec:
+      containers:
+      - image: image-registry.openshift-image-registry.svc:5000/untrusted/nginx:latest
+        imagePullPolicy: IfNotPresent
+        name: nginx-sample
+        args:
+        - "nginx"
+        - "-g"
+        - "daemon off; master_process off;"
+        securityContext:
+          privileged: true
+        ports:
+        - containerPort: 80
+          protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: nginx-sample
+  name: nginx-sample
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: nginx-sample
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  creationTimestamp: null
+  labels:
+    app: nginx-sample
+  name: nginx-sample
+spec:
+  port:
+    targetPort: 80
+  to:
+    kind: ""
+    name: nginx-sample
+    weight: null
