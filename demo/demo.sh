@@ -1,7 +1,6 @@
 #!/bin/bash
 
 set -x
-#export KUBECONFIG=~/.crc/machines/crc/kubeconfig
 
 VERSION=latest
 IMAGE_SA_NAME=attestation-server
@@ -15,11 +14,10 @@ LOCAL_IMAGE_REG="quay.io/$IMAGE_REG_NAME:$VERSION"
 LOCAL_IMAGE_ENCRYPT="quay.io/$IMAGE_ENCRYPT_NAME"
 LOCAL_IMAGE_DEBUG="quay.io/$IMAGE_DEBUG_NAME"
 ATTESTATION_NS=attestation
-INSECURE_NS=untrusted
-SA=tekton-encryp-images
+TKN_NS=tekton-build
+UNTRUSTED_NS=untrusted
 
 # Expose the internal registry
-#oc login -u kubeadmin -p $(cat ~/.crc/machines/crc/kubeadmin-password) https://api.crc.testing:6443
 oc patch configs.imageregistry.operator.openshift.io/cluster --patch '{"spec":{"defaultRoute":true}}' --type=merge
 HOST=$(oc get route default-route -n openshift-image-registry --template='{{ .spec.host }}')
 podman login -u admin -p $(oc whoami -t) --tls-verify=false $HOST
@@ -27,14 +25,19 @@ podman login -u admin -p $(oc whoami -t) --tls-verify=false $HOST
 oc new-project $ATTESTATION_NS
 oc create imagestream $IMAGE_SA_NAME
 oc create imagestream $IMAGE_GEN_NAME
+
+oc new-project $TKN_NS
 oc create imagestream $IMAGE_REG_NAME
 oc create imagestream $IMAGE_ENCRYPT_NAME
 
-IMAGE_SA="$HOST/$NS/$IMAGE_SA_NAME:$VERSION"
-IMAGE_GEN="$HOST/$NS/$IMAGE_GEN_NAME:$VERSION"
-IMAGE_REG="$HOST/$NS/$IMAGE_REG_NAME:$VERSION"
-IMAGE_ENCRYPT="$HOST/$NS/$IMAGE_ENCRYPT_NAME:$VERSION"
-IMAGE_DEBUG="$HOST/$NS/$IMAGE_DEBUG_NAME:$VERSION"
+# Create untrusted ns where the encrypted image will be pushed and deployed for the demo
+oc new-project $UNTRUSTED_NS
+
+IMAGE_SA="$HOST/$ATTESTATION_NS/$IMAGE_SA_NAME:$VERSION"
+IMAGE_GEN="$HOST/$ATTESTATION_NS/$IMAGE_GEN_NAME:$VERSION"
+IMAGE_REG="$HOST/$TKN_NS/$IMAGE_REG_NAME:$VERSION"
+IMAGE_ENCRYPT="$HOST/$TKN_NS/$IMAGE_ENCRYPT_NAME:$VERSION"
+IMAGE_DEBUG="$HOST/$ATTESTATION_NS/$IMAGE_DEBUG_NAME:$VERSION"
 
 # Copy all the images inside the internal registry
 # TODO create a function to push 
@@ -49,24 +52,16 @@ podman push --tls-verify=false $IMAGE_ENCRYPT
 podman tag $LOCAL_IMAGE_DEBUG  $IMAGE_DEBUG
 podman push --tls-verify=false $IMAGE_DEBUG
 
-# Create setup for the encrypt images tekton task
-oc apply -f ../encrypt-image/security-context.yaml
-# The service accout is required to provide privileged to the encryp images task in order to be able to create the loopback disk and use cryptesetup
-oc create sa $SA
-oc adm policy add-scc-to-user scc-admin-demo  system:serviceaccount:$NS:$SA
-# SCC for using hostpath by the attestation server. TODO replace hostpath by a PVC
-oc adm policy add-scc-to-user hostaccess  system:serviceaccount:$NS:default
+# Give privileged ssc to the sa for the demo. TODO define stricter rules
+oc adm policy add-scc-to-user privileged  system:serviceaccount:$ATTESTATION_NS:default
+oc adm policy add-scc-to-user privileged  system:serviceaccount:$TKN_NS:pipeline
+oc adm policy add-scc-to-user privileged  system:serviceaccount:$UNTRUSTED_NS:default
 
 # Install tekton tasks
+oc project $TKN_NS
 oc apply -f ../encrypt-image/tekton-task.yaml
 oc apply -f ../register-image/tekton-task.yaml
 
 # Deploy the attestation server and expose the service
+oc project $ATTESTATION_NS
 oc apply -f ../k8s-deployment
-
-# Create untrusted ns where the encrypted image will be deployed for the demo
-oc new-project $INSECURE_NS
-
-# TODO start the buiding tekton pipeline. The pipeline builds the container image from source using s2i, it encrypts the image and it register it to the attestation server
-
-# TODO deploy the encrypted image on the sev node
