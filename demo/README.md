@@ -5,7 +5,7 @@ This assume that you are running on Openshift. The setup can be adjusted also to
 
 ## Prerequisites
 In order to run the demo you need to:
-1. install and deploy an [OCP cluster using CRC](https://crc.dev/crc/)
+1. have an OCP cluster already installed and one or more worked SEV capable
 2. the tkn [binary](https://docs.openshift.com/container-platform/4.9/cli_reference/tkn_cli/installing-tkn.html#installing-tkn) 
 3. [install the pipline operator from the operator hub](https://docs.openshift.com/container-platform/4.9/cicd/pipelines/installing-pipelines.html)
 
