@@ -2,6 +2,7 @@
 
 set -x
 
+USER=${USER:-kubeadmin}
 VERSION=latest
 IMAGE_SA_NAME=attestation-server
 IMAGE_GEN_NAME=generate-libkrun-measurment
