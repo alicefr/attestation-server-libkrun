@@ -8,3 +8,5 @@ The confidential information are registered in clear in a previous together with
 The attestetation server has 2 endpoint:
   - `confidential`: where the images and likbrun measurments are registered
   - `untrused`: where the runtime can be attested
+
+This source code uses [Rocket](https://rocket.rs/) as web framework and is based on Sergio Lopez's [attestation-server](https://github.com/slp/sev-attestation-server)
