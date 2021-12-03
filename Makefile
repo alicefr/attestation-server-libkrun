@@ -11,8 +11,8 @@ REGISTRY ?= "quay.io"
 build:
 	cargo build
 
-build-attester:
-	cd attester
+build-verifier:
+	cd verifier
 	cargo build --release
 
 build-generate-libkrunfw-measurment:
@@ -22,8 +22,8 @@ build-generate-libkrunfw-measurment:
 image-build-crun-krun:
 	$(CONTAINER_RUNTIME) build -t "$(REGISTRY)/$(IMAGE_CRUN_KRUN):$(TAG)" -f build-libkrun-crun-sev/Dockerfile .
 
-image-attestation-server: build-attester
-	$(CONTAINER_RUNTIME) build -t "$(REGISTRY)/$(IMAGE_ATTEST_SERV):$(TAG)" -f attester/Dockerfile .
+image-attestation-server: build-verifier
+	$(CONTAINER_RUNTIME) build -t "$(REGISTRY)/$(IMAGE_ATTEST_SERV):$(TAG)" -f verifier/Dockerfile .
 
 image-generate-libkrunfw-measurment: build-generate-libkrunfw-measurment
 	$(CONTAINER_RUNTIME) build -t "$(REGISTRY)/$(IMAGE_GEN_MES):$(TAG)" -f generate-libkrun-measurment/Dockerfile .
